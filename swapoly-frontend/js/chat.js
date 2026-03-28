@@ -8,6 +8,7 @@ function getUi() {
   return {
     statusElement: document.getElementById('chat-status'),
     roleElement: document.getElementById('chat-role'),
+    buyerSelection: document.getElementById('buyer-selection'),
     messagesList: document.getElementById('messages-list'),
     form: document.getElementById('chat-form'),
     input: document.getElementById('message-input'),
@@ -88,6 +89,60 @@ function renderMessages(messagesList, messages, currentUser) {
   });
 
   messagesList.appendChild(fragment);
+}
+
+function getBuyerOptions(messages, sellerId) {
+  const buyers = new Map();
+
+  messages.forEach((msg) => {
+    const senderId = String(msg.sender_id);
+    const receiverId = String(msg.receiver_id);
+    const normalizedSellerId = String(sellerId);
+
+    if (senderId !== normalizedSellerId) {
+      buyers.set(senderId, msg.sender || `User${senderId}`);
+      return;
+    }
+
+    if (receiverId && receiverId !== normalizedSellerId && !buyers.has(receiverId)) {
+      buyers.set(receiverId, `User${receiverId}`);
+    }
+  });
+
+  return Array.from(buyers.entries()).map(([id, name]) => ({ id, name }));
+}
+
+function renderBuyerSelection(container, buyers, selectedBuyerId, onSelect) {
+  if (!container) {
+    return;
+  }
+
+  container.textContent = '';
+
+  const title = document.createElement('p');
+  title.className = 'status-message';
+  title.textContent = 'Select a buyer to start chat';
+  container.appendChild(title);
+
+  if (buyers.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'status-message';
+    empty.textContent = 'No buyers have messaged this listing yet.';
+    container.appendChild(empty);
+    return;
+  }
+
+  buyers.forEach((buyer) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'chat-btn';
+    button.textContent = `Chat with ${buyer.name}`;
+    button.disabled = String(selectedBuyerId) === String(buyer.id);
+    button.addEventListener('click', () => {
+      onSelect(buyer.id);
+    });
+    container.appendChild(button);
+  });
 }
 
 async function loadMessages(listingId, ui, currentUser, otherUserId, conversationId) {
@@ -185,10 +240,11 @@ async function initChatPage() {
   let currentRole = 'buyer';
   let otherUserId = null;
   let conversationId = null;
+  let listing = null;
 
   try {
     const listings = await getListings();
-    const listing = listings.find((item) => String(item.id) === String(listingId));
+    listing = listings.find((item) => String(item.id) === String(listingId));
 
     if (listing) {
       currentRole = String(currentUser.id) === String(listing.seller_id) ? 'seller' : 'buyer';
@@ -209,23 +265,60 @@ async function initChatPage() {
   }
 
   setRoleLabel(ui.roleElement, currentRole);
-  if (!otherUserId || !conversationId) {
-    setStatus(
-      ui.statusElement,
+
+  async function refreshConversation(selectedBuyerId = buyerId) {
+    buyerId = selectedBuyerId;
+    otherUserId =
       currentRole === 'seller'
-        ? 'Buyer conversation not selected yet.'
-        : 'Unable to determine chat participants.',
-      true,
-    );
-    ui.messagesList.textContent = '';
-    ui.sendButton.disabled = true;
-    return;
+        ? buyerId
+        : String(listing?.seller_id ?? sellerId ?? '');
+    conversationId = buyerId ? `${listingId}_${buyerId}` : null;
+
+    if (currentRole === 'seller') {
+      const allListingMessages = await getMessages(listingId);
+      const buyers = getBuyerOptions(allListingMessages, listing?.seller_id ?? sellerId);
+      renderBuyerSelection(ui.buyerSelection, buyers, buyerId, async (nextBuyerId) => {
+        const nextParams = new URLSearchParams(window.location.search);
+        nextParams.set('buyer_id', nextBuyerId);
+        window.history.replaceState({}, '', `./chat.html?${nextParams.toString()}`);
+        stopAutoRefresh();
+        const ready = await refreshConversation(nextBuyerId);
+        if (ready) {
+          startAutoRefresh(listingId, ui, currentUser, otherUserId, conversationId);
+        }
+      });
+    } else if (ui.buyerSelection) {
+      ui.buyerSelection.textContent = '';
+    }
+
+    if (!otherUserId || !conversationId) {
+      setStatus(
+        ui.statusElement,
+        currentRole === 'seller'
+          ? 'Select a buyer to start chat'
+          : 'Unable to determine chat participants.',
+        true,
+      );
+      ui.messagesList.textContent = '';
+      ui.sendButton.disabled = true;
+      ui.input.disabled = true;
+      return false;
+    }
+
+    ui.sendButton.disabled = false;
+    ui.input.disabled = false;
+    renderLoading(ui.statusElement, ui.messagesList);
+    await loadMessages(listingId, ui, currentUser, otherUserId, conversationId);
+    return true;
   }
 
-  renderLoading(ui.statusElement, ui.messagesList);
-  await loadMessages(listingId, ui, currentUser, otherUserId, conversationId);
+  const hasConversation = await refreshConversation();
 
   ui.form.addEventListener('submit', (event) => {
+    if (!otherUserId || !conversationId) {
+      event.preventDefault();
+      return;
+    }
     handleSubmit(event, listingId, ui, currentUser, currentRole, otherUserId, conversationId);
   });
 
@@ -238,7 +331,9 @@ async function initChatPage() {
     });
   }
 
-  startAutoRefresh(listingId, ui, currentUser, otherUserId, conversationId);
+  if (hasConversation) {
+    startAutoRefresh(listingId, ui, currentUser, otherUserId, conversationId);
+  }
   window.addEventListener('beforeunload', stopAutoRefresh, { once: true });
 }
 
