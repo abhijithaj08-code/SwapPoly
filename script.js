@@ -152,12 +152,16 @@ function createListingCard(listing) {
 
 function formatPrice(price) {
   if (price === null || price === undefined || Number.isNaN(Number(price))) {
-    return '$0.00';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 2,
+    }).format(0);
   }
 
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     maximumFractionDigits: 2,
   }).format(Number(price));
 }
