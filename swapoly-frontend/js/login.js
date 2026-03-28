@@ -1,4 +1,7 @@
-import { getCurrentUser, setCurrentUser } from './user.js';
+import { getCurrentUser } from './user.js';
+
+const USER_STORAGE_KEY = 'user';
+const USER_REGISTRY_KEY = 'swapoly_users';
 
 function getUi() {
   return {
@@ -17,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const existingUser = getCurrentUser();
 
   if (existingUser) {
+    console.log('Current user:', existingUser);
     window.location.href = './index.html';
     return;
   }
@@ -36,7 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    setCurrentUser(name);
+    const storedUsers = JSON.parse(localStorage.getItem(USER_REGISTRY_KEY) || '[]');
+    const matchedUser = storedUsers.find(
+      (user) => user.name.toLowerCase() === name.toLowerCase(),
+    );
+
+    const user =
+      matchedUser ||
+      {
+        id: Date.now(),
+        name,
+      };
+
+    if (!matchedUser) {
+      storedUsers.push(user);
+      localStorage.setItem(USER_REGISTRY_KEY, JSON.stringify(storedUsers));
+    }
+
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    console.log('Current user:', user);
     window.location.href = './index.html';
   });
 });
