@@ -74,6 +74,10 @@ function renderItem(containerElement, listing) {
   category.className = 'category-tag';
   category.textContent = listing.category_name || 'Uncategorized';
 
+  const owner = document.createElement('p');
+  owner.className = 'status-message listing-owner';
+  owner.textContent = `Listed by: ${listing.seller_name || 'Unknown seller'}`;
+
   const status = document.createElement('p');
   status.className = 'status-message';
   status.textContent = `Status: ${listing.status || 'Unknown'}`;
@@ -98,7 +102,7 @@ function renderItem(containerElement, listing) {
     actions.append(soldButton);
   }
 
-  content.append(title, price, category, status, actions);
+  content.append(title, price, category, owner, status, actions);
   card.append(imageWrap, content);
   containerElement.appendChild(card);
 }

@@ -28,6 +28,7 @@ function createListingCard(listing) {
   card.dataset.title = listing.title ?? '';
   card.dataset.whatsapp = listing.whatsapp_number ?? '';
   card.dataset.sellerId = listing.seller_id ?? '';
+  card.dataset.sellerName = listing.seller_name ?? '';
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
 
@@ -64,6 +65,10 @@ function createListingCard(listing) {
   category.className = 'category-tag';
   category.textContent = listing.category_name || 'Uncategorized';
 
+  const owner = document.createElement('p');
+  owner.className = 'status-message listing-owner';
+  owner.textContent = `Listed by: ${listing.seller_name || 'Unknown seller'}`;
+
   const actions = document.createElement('div');
   actions.className = 'listing-actions';
 
@@ -91,7 +96,7 @@ function createListingCard(listing) {
     actions.append(soldButton);
   }
 
-  content.append(title, price, category, actions);
+  content.append(title, price, category, owner, actions);
   card.append(imageWrap, content);
 
   return card;
@@ -176,6 +181,7 @@ export function attachEventHandlers(containerElement, addItemButton, handlers) {
           title: card.dataset.title,
           whatsapp: card.dataset.whatsapp,
           sellerId: card.dataset.sellerId,
+          sellerName: card.dataset.sellerName,
         });
       }
 

@@ -61,6 +61,7 @@ async function handleSubmit(event, ui) {
     category_name: ui.categoryInput.value.trim(),
     whatsapp_number: ui.whatsappInput.value.trim(),
     seller_id: currentUser.id,
+    seller_name: currentUser.name,
   };
 
   const validationError = validateForm(payload);
