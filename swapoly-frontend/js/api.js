@@ -3,6 +3,7 @@ const LISTINGS_ENDPOINT = 'http://localhost:5000/api/listings';
 export async function getListings() {
   const response = await fetch(LISTINGS_ENDPOINT, {
     method: 'GET',
+    cache: 'no-store',
     headers: {
       Accept: 'application/json',
     },
@@ -13,6 +14,7 @@ export async function getListings() {
   }
 
   const data = await response.json();
+  console.log('Listings from API:', data);
   return Array.isArray(data) ? data : [];
 }
 
@@ -33,6 +35,8 @@ export async function markAsSold(id) {
 }
 
 export async function createListing(data) {
+  console.log('Sending payload:', data);
+
   const response = await fetch(LISTINGS_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -43,7 +47,12 @@ export async function createListing(data) {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create listing');
+    const errorText = await response.text().catch(() => '');
+    console.error('Create listing failed:', {
+      status: response.status,
+      body: errorText,
+    });
+    throw new Error(errorText || 'Failed to create listing');
   }
 
   return response.json();

@@ -1,5 +1,12 @@
 import { createListing } from './api.js';
 
+const CATEGORY_OPTIONS = new Set([
+  'Drawing Gear',
+  'Lab Essentials',
+  'Books',
+  'Electronics',
+]);
+
 function getUi() {
   return {
     form: document.getElementById('add-listing-form'),
@@ -24,6 +31,10 @@ function validateForm({ title, price, image_url, category_name }) {
 
   if (Number.isNaN(price) || price <= 0) {
     return 'Price must be a positive number.';
+  }
+
+  if (!CATEGORY_OPTIONS.has(category_name)) {
+    return 'Please select a valid category.';
   }
 
   return null;
@@ -55,7 +66,13 @@ async function handleSubmit(event, ui) {
     setStatus(ui.status, 'Listing created successfully');
     window.location.href = './index.html';
   } catch (error) {
-    setStatus(ui.status, 'Failed to create listing. Try again.', true);
+    setStatus(
+      ui.status,
+      error instanceof Error && error.message
+        ? `Failed to create listing. ${error.message}`
+        : 'Failed to create listing. Try again.',
+      true,
+    );
     console.error('Failed to create listing:', error);
   } finally {
     ui.submitButton.disabled = false;

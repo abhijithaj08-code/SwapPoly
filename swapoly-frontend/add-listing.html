@@ -54,14 +54,18 @@
             </label>
             <label>
               Category
-              <input
+              <select
                 id="category"
                 name="category"
                 class="search-input"
-                type="text"
-                placeholder="Category"
                 required
-              />
+              >
+                <option value="">Select Category</option>
+                <option value="Drawing Gear">Drawing Gear</option>
+                <option value="Lab Essentials">Lab Essentials</option>
+                <option value="Books">Books</option>
+                <option value="Electronics">Electronics</option>
+              </select>
             </label>
             <button id="submit-btn" class="chat-btn" type="submit">Create Listing</button>
           </form>
