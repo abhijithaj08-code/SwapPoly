@@ -6,7 +6,7 @@ import {
   renderLoading,
   updateListingStatus,
 } from './ui.js';
-import { logoutCurrentUser, requireCurrentUser } from './user.js';
+import { getCurrentUser, logoutCurrentUser, requireCurrentUser } from './user.js';
 
 console.log('JS Loaded');
 
@@ -38,10 +38,14 @@ function attachUiHandlers(ui) {
     },
     onChat(listing) {
       console.log('Start chat for listing:', listing.id);
+      const currentUser = getCurrentUser();
+      const buyerId = String(currentUser?.id) === String(listing.sellerId) ? '' : String(currentUser?.id ?? '');
       const params = new URLSearchParams({
         listing_id: String(listing.id),
         title: listing.title || '',
         whatsapp: listing.whatsapp || '',
+        seller_id: listing.sellerId || '',
+        buyer_id: buyerId,
       });
       window.location.href = `./chat.html?${params.toString()}`;
     },

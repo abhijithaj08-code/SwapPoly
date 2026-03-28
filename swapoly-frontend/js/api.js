@@ -59,8 +59,20 @@ export async function createListing(data) {
   return response.json();
 }
 
-export async function getMessages(listingId) {
-  const response = await fetch(`${MESSAGES_ENDPOINT}/${listingId}`, {
+export async function getMessages(listingId, currentUserId, otherUserId, conversationId) {
+  const params = new URLSearchParams();
+
+  if (currentUserId && otherUserId) {
+    params.set('current_user_id', currentUserId);
+    params.set('other_user_id', otherUserId);
+  }
+
+  if (conversationId) {
+    params.set('conversation_id', conversationId);
+  }
+
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${MESSAGES_ENDPOINT}/${listingId}${suffix}`, {
     method: 'GET',
     cache: 'no-store',
     headers: {

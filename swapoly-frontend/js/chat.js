@@ -25,6 +25,11 @@ function setRoleLabel(roleElement, role) {
   roleElement.textContent = `You are chatting as ${role === 'seller' ? 'Seller' : 'Buyer'}`;
 }
 
+function setStatus(statusElement, message, isError = false) {
+  statusElement.textContent = message;
+  statusElement.classList.toggle('is-error', isError);
+}
+
 function openWhatsApp(listing) {
   if (!listing?.whatsapp_number) {
     alert('Seller WhatsApp number not available');
@@ -85,9 +90,9 @@ function renderMessages(messagesList, messages, currentUser) {
   messagesList.appendChild(fragment);
 }
 
-async function loadMessages(listingId, ui, currentUser) {
+async function loadMessages(listingId, ui, currentUser, otherUserId, conversationId) {
   try {
-    const messages = await getMessages(listingId);
+    const messages = await getMessages(listingId, currentUser.id, otherUserId, conversationId);
     ui.statusElement.textContent = '';
     ui.statusElement.classList.remove('is-error');
     renderMessages(ui.messagesList, messages, currentUser);
@@ -97,7 +102,7 @@ async function loadMessages(listingId, ui, currentUser) {
   }
 }
 
-async function handleSubmit(event, listingId, ui, currentUser, currentRole) {
+async function handleSubmit(event, listingId, ui, currentUser, currentRole, otherUserId, conversationId) {
   event.preventDefault();
 
   const message = ui.input.value.trim();
@@ -113,13 +118,15 @@ async function handleSubmit(event, listingId, ui, currentUser, currentRole) {
     await createMessage({
       listing_id: listingId,
       sender_id: currentUser.id,
+      receiver_id: otherUserId,
+      conversation_id: conversationId,
       sender: currentUser.name,
       sender_role: currentRole,
       message,
     });
 
     ui.input.value = '';
-    await loadMessages(listingId, ui, currentUser);
+    await loadMessages(listingId, ui, currentUser, otherUserId, conversationId);
   } catch (error) {
     renderError(ui.statusElement, 'Unable to send message. Please try again later.');
     console.error('Failed to send message:', error);
@@ -129,9 +136,9 @@ async function handleSubmit(event, listingId, ui, currentUser, currentRole) {
   }
 }
 
-function startAutoRefresh(listingId, ui, currentUser) {
+function startAutoRefresh(listingId, ui, currentUser, otherUserId, conversationId) {
   refreshHandle = window.setInterval(() => {
-    loadMessages(listingId, ui, currentUser);
+    loadMessages(listingId, ui, currentUser, otherUserId, conversationId);
   }, 2500);
 }
 
@@ -167,6 +174,8 @@ async function initChatPage() {
   const listingId = params.get('listing_id');
   const listingTitle = params.get('title');
   const whatsappNumber = params.get('whatsapp');
+  const sellerId = params.get('seller_id');
+  let buyerId = params.get('buyer_id');
 
   if (!listingId) {
     renderError(ui.statusElement, 'Listing not found for chat.');
@@ -174,6 +183,8 @@ async function initChatPage() {
   }
 
   let currentRole = 'buyer';
+  let otherUserId = null;
+  let conversationId = null;
 
   try {
     const listings = await getListings();
@@ -181,17 +192,41 @@ async function initChatPage() {
 
     if (listing) {
       currentRole = String(currentUser.id) === String(listing.seller_id) ? 'seller' : 'buyer';
+      buyerId =
+        buyerId ||
+        (currentRole === 'buyer' ? String(currentUser.id) : '');
+      otherUserId =
+        currentRole === 'seller'
+          ? buyerId
+          : String(listing.seller_id);
+      conversationId =
+        buyerId
+          ? `${listingId}_${buyerId}`
+          : null;
     }
   } catch (error) {
     console.error('Failed to determine chat role:', error);
   }
 
   setRoleLabel(ui.roleElement, currentRole);
+  if (!otherUserId || !conversationId) {
+    setStatus(
+      ui.statusElement,
+      currentRole === 'seller'
+        ? 'Buyer conversation not selected yet.'
+        : 'Unable to determine chat participants.',
+      true,
+    );
+    ui.messagesList.textContent = '';
+    ui.sendButton.disabled = true;
+    return;
+  }
+
   renderLoading(ui.statusElement, ui.messagesList);
-  await loadMessages(listingId, ui, currentUser);
+  await loadMessages(listingId, ui, currentUser, otherUserId, conversationId);
 
   ui.form.addEventListener('submit', (event) => {
-    handleSubmit(event, listingId, ui, currentUser, currentRole);
+    handleSubmit(event, listingId, ui, currentUser, currentRole, otherUserId, conversationId);
   });
 
   if (ui.whatsappButton) {
@@ -203,7 +238,7 @@ async function initChatPage() {
     });
   }
 
-  startAutoRefresh(listingId, ui, currentUser);
+  startAutoRefresh(listingId, ui, currentUser, otherUserId, conversationId);
   window.addEventListener('beforeunload', stopAutoRefresh, { once: true });
 }
 

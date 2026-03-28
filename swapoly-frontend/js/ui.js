@@ -27,6 +27,7 @@ function createListingCard(listing) {
   card.dataset.id = listing.id ?? '';
   card.dataset.title = listing.title ?? '';
   card.dataset.whatsapp = listing.whatsapp_number ?? '';
+  card.dataset.sellerId = listing.seller_id ?? '';
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
 
@@ -174,6 +175,7 @@ export function attachEventHandlers(containerElement, addItemButton, handlers) {
           id: card.dataset.id,
           title: card.dataset.title,
           whatsapp: card.dataset.whatsapp,
+          sellerId: card.dataset.sellerId,
         });
       }
 

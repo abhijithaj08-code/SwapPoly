@@ -65,16 +65,28 @@ app.patch('/api/listings/:id/sold', (req, res) => {
 });
 
 app.post('/api/messages', (req, res) => {
-  const { listing_id, sender_id, sender, sender_role, message } = req.body ?? {};
+  const {
+    listing_id,
+    sender_id,
+    receiver_id,
+    sender,
+    sender_role,
+    message,
+    conversation_id,
+  } = req.body ?? {};
 
-  if (!listing_id || !sender || !message) {
-    return res.status(400).json({ message: 'listing_id, sender, and message are required' });
+  if (!listing_id || !sender_id || !receiver_id || !sender || !message) {
+    return res.status(400).json({
+      message: 'listing_id, sender_id, receiver_id, sender, and message are required',
+    });
   }
 
   const newMessage = {
     id: Date.now(),
     listing_id,
-    sender_id: sender_id ?? null,
+    sender_id,
+    receiver_id,
+    conversation_id: conversation_id ?? `${listing_id}_${Math.min(Number(sender_id), Number(receiver_id))}`,
     sender,
     sender_role: sender_role ?? 'buyer',
     message,
@@ -86,9 +98,28 @@ app.post('/api/messages', (req, res) => {
 });
 
 app.get('/api/messages/:listing_id', (req, res) => {
-  const listingMessages = messages.filter(
-    (msg) => String(msg.listing_id) === String(req.params.listing_id),
-  );
+  const { current_user_id, other_user_id, conversation_id } = req.query;
+
+  const listingMessages = messages.filter((msg) => {
+    if (String(msg.listing_id) !== String(req.params.listing_id)) {
+      return false;
+    }
+
+    if (conversation_id) {
+      return String(msg.conversation_id) === String(conversation_id);
+    }
+
+    if (current_user_id && other_user_id) {
+      return (
+        (String(msg.sender_id) === String(current_user_id) &&
+          String(msg.receiver_id) === String(other_user_id)) ||
+        (String(msg.sender_id) === String(other_user_id) &&
+          String(msg.receiver_id) === String(current_user_id))
+      );
+    }
+
+    return true;
+  });
 
   res.json(listingMessages);
 });

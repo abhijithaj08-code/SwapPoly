@@ -149,10 +149,17 @@ function attachItemHandlers(containerElement, statusElement, listingRef) {
 
     if (button.dataset.action === 'chat') {
       console.log('Start chat for listing:', listingId);
+      const currentUser = getCurrentUser();
+      const buyerId =
+        String(currentUser?.id) === String(listingRef.current?.seller_id)
+          ? ''
+          : String(currentUser?.id ?? '');
       const params = new URLSearchParams({
         listing_id: String(listingId),
         title: listingRef.current?.title || '',
         whatsapp: listingRef.current?.whatsapp_number || '',
+        seller_id: String(listingRef.current?.seller_id ?? ''),
+        buyer_id: buyerId,
       });
       window.location.href = `./chat.html?${params.toString()}`;
       return;
