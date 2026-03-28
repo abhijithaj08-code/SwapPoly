@@ -89,6 +89,10 @@ function renderMessages(messagesList, messages, currentUser) {
   });
 
   messagesList.appendChild(fragment);
+  messagesList.scrollTo({
+    top: messagesList.scrollHeight,
+    behavior: 'smooth',
+  });
 }
 
 function getBuyerOptions(messages, sellerId) {
