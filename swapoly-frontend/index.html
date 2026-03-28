@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwapPoly</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1 class="app-title">SwapPoly</h1>
+    </header>
+
+    <main class="page">
+      <section class="controls" aria-label="Search listings">
+        <label for="search-input" class="visually-hidden">Search listings</label>
+        <input
+          id="search-input"
+          class="search-input"
+          type="search"
+          placeholder="Search listings"
+          autocomplete="off"
+        />
+      </section>
+
+      <section class="listings-section" aria-label="Listings">
+        <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
+        <div id="listings-container" class="listings-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <button type="button" class="fab" aria-label="Add Item">+ Add Item</button>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

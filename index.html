@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwapPoly | Listings</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1 class="app-title">SwapPoly</h1>
+    </header>
+
+    <main class="page">
+      <section class="controls" aria-label="Listing controls">
+        <div class="search-wrap">
+          <label for="search-input" class="visually-hidden">Search listings</label>
+          <input
+            id="search-input"
+            class="search-input"
+            type="search"
+            placeholder="Search listings"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="category-filters" aria-label="Categories">
+          <button type="button" class="filter-chip is-active">All</button>
+          <button type="button" class="filter-chip">Books</button>
+          <button type="button" class="filter-chip">Electronics</button>
+          <button type="button" class="filter-chip">Furniture</button>
+          <button type="button" class="filter-chip">Other</button>
+        </div>
+      </section>
+
+      <section class="listings-section" aria-label="Listings">
+        <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
+        <div id="listings-grid" class="listings-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <button type="button" class="fab" aria-label="Add listing">+</button>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
