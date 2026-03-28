@@ -17,6 +17,7 @@ function getUi() {
     priceInput: document.getElementById('price'),
     imageUrlInput: document.getElementById('image_url'),
     categoryInput: document.getElementById('category'),
+    whatsappInput: document.getElementById('whatsapp'),
   };
 }
 
@@ -25,8 +26,8 @@ function setStatus(statusElement, message, isError = false) {
   statusElement.classList.toggle('is-error', isError);
 }
 
-function validateForm({ title, price, image_url, category_name }) {
-  if (!title || !price || !image_url || !category_name) {
+function validateForm({ title, price, image_url, category_name, whatsapp_number }) {
+  if (!title || !price || !image_url || !category_name || !whatsapp_number) {
     return 'All fields are required.';
   }
 
@@ -36,6 +37,10 @@ function validateForm({ title, price, image_url, category_name }) {
 
   if (!CATEGORY_OPTIONS.has(category_name)) {
     return 'Please select a valid category.';
+  }
+
+  if (!/^\+?[0-9]{10,15}$/.test(whatsapp_number)) {
+    return 'Please enter a valid WhatsApp number.';
   }
 
   return null;
@@ -50,6 +55,7 @@ async function handleSubmit(event, ui) {
     price: Number(ui.priceInput.value),
     image_url: ui.imageUrlInput.value.trim(),
     category_name: ui.categoryInput.value.trim(),
+    whatsapp_number: ui.whatsappInput.value.trim(),
     seller_id: currentUser.id,
   };
 

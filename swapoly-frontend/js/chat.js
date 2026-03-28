@@ -12,7 +12,19 @@ function getUi() {
     input: document.getElementById('message-input'),
     sendButton: document.getElementById('send-btn'),
     container: document.getElementById('chat-container'),
+    whatsappButton: document.getElementById('whatsapp-btn'),
   };
+}
+
+function openWhatsApp(listing) {
+  if (!listing?.whatsapp_number) {
+    return;
+  }
+
+  const message = `Hi, I saw your listing for ${listing.title || 'this item'} on SwapPoly. Is it still available?`;
+  const encodedMessage = encodeURIComponent(message);
+  const sanitizedNumber = String(listing.whatsapp_number).replace(/[^\d]/g, '');
+  window.open(`https://wa.me/${sanitizedNumber}?text=${encodedMessage}`, '_blank');
 }
 
 function formatTime(value) {
@@ -127,6 +139,8 @@ async function initChatPage() {
 
   const params = new URLSearchParams(window.location.search);
   const listingId = params.get('listing_id');
+  const listingTitle = params.get('title');
+  const whatsappNumber = params.get('whatsapp');
 
   if (!listingId) {
     renderError(ui.statusElement, 'Listing not found for chat.');
@@ -139,6 +153,19 @@ async function initChatPage() {
   ui.form.addEventListener('submit', (event) => {
     handleSubmit(event, listingId, ui, currentUser);
   });
+
+  if (ui.whatsappButton) {
+    if (whatsappNumber) {
+      ui.whatsappButton.addEventListener('click', () => {
+        openWhatsApp({
+          title: listingTitle,
+          whatsapp_number: whatsappNumber,
+        });
+      });
+    } else {
+      ui.whatsappButton.disabled = true;
+    }
+  }
 
   startAutoRefresh(listingId, ui, currentUser);
   window.addEventListener('beforeunload', stopAutoRefresh, { once: true });

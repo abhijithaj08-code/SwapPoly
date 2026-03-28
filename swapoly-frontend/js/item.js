@@ -23,6 +23,17 @@ function createActionButton(label, className, action, disabled = false) {
   return button;
 }
 
+function openWhatsApp(listing) {
+  if (!listing?.whatsapp_number) {
+    return;
+  }
+
+  const message = `Hi, I saw your listing for ${listing.title || 'this item'} on SwapPoly. Is it still available?`;
+  const encodedMessage = encodeURIComponent(message);
+  const sanitizedNumber = String(listing.whatsapp_number).replace(/[^\d]/g, '');
+  window.open(`https://wa.me/${sanitizedNumber}?text=${encodedMessage}`, '_blank');
+}
+
 function renderItem(containerElement, listing) {
   const currentUser = getCurrentUser();
   containerElement.textContent = '';
@@ -72,10 +83,16 @@ function renderItem(containerElement, listing) {
 
   const sold = isSold(listing);
   const chatButton = createActionButton('Chat / Make Offer', 'chat-btn', 'chat', sold);
+  const whatsappButton = createActionButton(
+    'Finalize on WhatsApp',
+    'chat-btn',
+    'whatsapp',
+    !listing.whatsapp_number,
+  );
   const soldButton = createActionButton(sold ? 'Sold' : 'Mark as Sold', 'sold-btn', 'sold', sold);
   const isOwner = String(listing.seller_id) === String(currentUser.id);
 
-  actions.append(chatButton);
+  actions.append(chatButton, whatsappButton);
 
   if (isOwner) {
     actions.append(soldButton);
@@ -119,7 +136,7 @@ function updateItemStatus(containerElement, listingId) {
   }
 }
 
-function attachItemHandlers(containerElement, statusElement) {
+function attachItemHandlers(containerElement, statusElement, listingRef) {
   containerElement.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
     const card = event.target.closest('.listing-card');
@@ -132,7 +149,17 @@ function attachItemHandlers(containerElement, statusElement) {
 
     if (button.dataset.action === 'chat') {
       console.log('Start chat for listing:', listingId);
-      window.location.href = `./chat.html?listing_id=${listingId}`;
+      const params = new URLSearchParams({
+        listing_id: String(listingId),
+        title: listingRef.current?.title || '',
+        whatsapp: listingRef.current?.whatsapp_number || '',
+      });
+      window.location.href = `./chat.html?${params.toString()}`;
+      return;
+    }
+
+    if (button.dataset.action === 'whatsapp') {
+      openWhatsApp(listingRef.current);
       return;
     }
 
@@ -157,6 +184,7 @@ function attachItemHandlers(containerElement, statusElement) {
 async function initItemPage() {
   getCurrentUser();
   const ui = getUi();
+  const listingRef = { current: null };
 
   if (!ui.statusElement || !ui.containerElement) {
     console.error('Required item detail elements are missing.');
@@ -164,7 +192,7 @@ async function initItemPage() {
   }
 
   renderLoading(ui.statusElement, ui.containerElement);
-  attachItemHandlers(ui.containerElement, ui.statusElement);
+  attachItemHandlers(ui.containerElement, ui.statusElement, listingRef);
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -184,6 +212,7 @@ async function initItemPage() {
       return;
     }
 
+    listingRef.current = listing;
     ui.statusElement.textContent = '';
     ui.statusElement.classList.remove('is-error');
     renderItem(ui.containerElement, listing);

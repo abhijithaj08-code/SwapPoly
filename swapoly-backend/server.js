@@ -25,9 +25,9 @@ app.get('/api/listings', (req, res) => {
 app.post('/api/listings', (req, res) => {
   console.log('Incoming request:', req.body);
 
-  const { title, price, image_url, category_name, seller_id } = req.body ?? {};
+  const { title, price, image_url, category_name, seller_id, whatsapp_number } = req.body ?? {};
 
-  if (!title || !price || !image_url || !category_name) {
+  if (!title || !price || !image_url || !category_name || !whatsapp_number) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
@@ -43,6 +43,7 @@ app.post('/api/listings', (req, res) => {
     price: numericPrice,
     image_url,
     category_name,
+    whatsapp_number,
     seller_id: seller_id ?? null,
     status: 'Available',
   };
