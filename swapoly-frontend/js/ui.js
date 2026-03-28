@@ -1,4 +1,4 @@
-function formatPrice(price) {
+export function formatPrice(price) {
   if (price === null || price === undefined || Number.isNaN(Number(price))) {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',

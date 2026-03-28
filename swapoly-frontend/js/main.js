@@ -21,7 +21,7 @@ function attachUiHandlers(ui) {
   attachEventHandlers(ui.listingsContainer, ui.addItemButton, {
     onCardClick(listingId) {
       console.log('Clicked listing:', listingId);
-      console.log('Future navigation target prepared for listing:', listingId);
+      window.location.href = `./item.html?id=${listingId}`;
     },
     onChat(listingId) {
       console.log('Start chat for listing:', listingId);
