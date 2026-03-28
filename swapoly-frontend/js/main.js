@@ -6,6 +6,7 @@ import {
   renderLoading,
   updateListingStatus,
 } from './ui.js';
+import { ensureCurrentUser } from './user.js';
 
 console.log('JS Loaded');
 
@@ -50,6 +51,7 @@ function attachUiHandlers(ui) {
 }
 
 async function initApp() {
+  ensureCurrentUser();
   const ui = getUi();
 
   if (!ui.statusMessage || !ui.listingsContainer) {

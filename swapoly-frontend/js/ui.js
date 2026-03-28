@@ -1,3 +1,5 @@
+import { getCurrentUser } from './user.js';
+
 export function formatPrice(price) {
   if (price === null || price === undefined || Number.isNaN(Number(price))) {
     return new Intl.NumberFormat('en-IN', {
@@ -19,6 +21,7 @@ function isSold(listing) {
 }
 
 function createListingCard(listing) {
+  const currentUser = getCurrentUser();
   const card = document.createElement('article');
   card.className = 'listing-card';
   card.dataset.id = listing.id ?? '';
@@ -72,13 +75,19 @@ function createListingCard(listing) {
   soldButton.className = 'sold-btn';
   soldButton.dataset.action = 'sold';
   soldButton.textContent = isSold(listing) ? 'Sold' : 'Mark as Sold';
+  const isOwner = String(listing.seller_id) === String(currentUser.id);
 
   if (isSold(listing)) {
     chatButton.disabled = true;
     soldButton.disabled = true;
   }
 
-  actions.append(chatButton, soldButton);
+  actions.append(chatButton);
+
+  if (isOwner) {
+    actions.append(soldButton);
+  }
+
   content.append(title, price, category, actions);
   card.append(imageWrap, content);
 

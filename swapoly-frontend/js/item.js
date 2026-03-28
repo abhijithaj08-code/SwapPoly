@@ -1,5 +1,6 @@
 import { getListings, markAsSold } from './api.js';
 import { formatPrice, renderError, renderLoading } from './ui.js';
+import { getCurrentUser } from './user.js';
 
 function getUi() {
   return {
@@ -23,6 +24,7 @@ function createActionButton(label, className, action, disabled = false) {
 }
 
 function renderItem(containerElement, listing) {
+  const currentUser = getCurrentUser();
   containerElement.textContent = '';
 
   const card = document.createElement('article');
@@ -71,8 +73,14 @@ function renderItem(containerElement, listing) {
   const sold = isSold(listing);
   const chatButton = createActionButton('Chat / Make Offer', 'chat-btn', 'chat', sold);
   const soldButton = createActionButton(sold ? 'Sold' : 'Mark as Sold', 'sold-btn', 'sold', sold);
+  const isOwner = String(listing.seller_id) === String(currentUser.id);
 
-  actions.append(chatButton, soldButton);
+  actions.append(chatButton);
+
+  if (isOwner) {
+    actions.append(soldButton);
+  }
+
   content.append(title, price, category, status, actions);
   card.append(imageWrap, content);
   containerElement.appendChild(card);
@@ -147,6 +155,7 @@ function attachItemHandlers(containerElement, statusElement) {
 }
 
 async function initItemPage() {
+  getCurrentUser();
   const ui = getUi();
 
   if (!ui.statusElement || !ui.containerElement) {

@@ -1,5 +1,6 @@
 import { createMessage, getMessages } from './api.js';
 import { renderError, renderLoading } from './ui.js';
+import { getCurrentUser } from './user.js';
 
 let refreshHandle = null;
 
@@ -23,7 +24,7 @@ function formatTime(value) {
   }).format(new Date(value));
 }
 
-function renderMessages(messagesList, messages) {
+function renderMessages(messagesList, messages, currentUser) {
   messagesList.textContent = '';
 
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -39,6 +40,9 @@ function renderMessages(messagesList, messages) {
   messages.forEach((item) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'chat-message';
+    if (item.sender === currentUser.name) {
+      wrapper.classList.add('is-own');
+    }
 
     const sender = document.createElement('strong');
     sender.textContent = item.sender;
@@ -57,19 +61,19 @@ function renderMessages(messagesList, messages) {
   messagesList.appendChild(fragment);
 }
 
-async function loadMessages(listingId, ui) {
+async function loadMessages(listingId, ui, currentUser) {
   try {
     const messages = await getMessages(listingId);
     ui.statusElement.textContent = '';
     ui.statusElement.classList.remove('is-error');
-    renderMessages(ui.messagesList, messages);
+    renderMessages(ui.messagesList, messages, currentUser);
   } catch (error) {
     renderError(ui.statusElement, 'Unable to load messages. Please try again later.');
     console.error('Failed to load messages:', error);
   }
 }
 
-async function handleSubmit(event, listingId, ui) {
+async function handleSubmit(event, listingId, ui, currentUser) {
   event.preventDefault();
 
   const message = ui.input.value.trim();
@@ -84,12 +88,12 @@ async function handleSubmit(event, listingId, ui) {
   try {
     await createMessage({
       listing_id: listingId,
-      sender: 'user1',
+      sender: currentUser.name,
       message,
     });
 
     ui.input.value = '';
-    await loadMessages(listingId, ui);
+    await loadMessages(listingId, ui, currentUser);
   } catch (error) {
     renderError(ui.statusElement, 'Unable to send message. Please try again later.');
     console.error('Failed to send message:', error);
@@ -99,9 +103,9 @@ async function handleSubmit(event, listingId, ui) {
   }
 }
 
-function startAutoRefresh(listingId, ui) {
+function startAutoRefresh(listingId, ui, currentUser) {
   refreshHandle = window.setInterval(() => {
-    loadMessages(listingId, ui);
+    loadMessages(listingId, ui, currentUser);
   }, 2500);
 }
 
@@ -113,6 +117,7 @@ function stopAutoRefresh() {
 }
 
 async function initChatPage() {
+  const currentUser = getCurrentUser();
   const ui = getUi();
 
   if (!ui.statusElement || !ui.messagesList || !ui.form || !ui.input || !ui.sendButton || !ui.container) {
@@ -129,13 +134,13 @@ async function initChatPage() {
   }
 
   renderLoading(ui.statusElement, ui.messagesList);
-  await loadMessages(listingId, ui);
+  await loadMessages(listingId, ui, currentUser);
 
   ui.form.addEventListener('submit', (event) => {
-    handleSubmit(event, listingId, ui);
+    handleSubmit(event, listingId, ui, currentUser);
   });
 
-  startAutoRefresh(listingId, ui);
+  startAutoRefresh(listingId, ui, currentUser);
   window.addEventListener('beforeunload', stopAutoRefresh, { once: true });
 }
 
