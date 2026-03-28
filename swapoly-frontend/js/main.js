@@ -25,6 +25,7 @@ function attachUiHandlers(ui) {
     },
     onChat(listingId) {
       console.log('Start chat for listing:', listingId);
+      window.location.href = `./chat.html?listing_id=${listingId}`;
     },
     async onMarkSold(listingId, buttonElement) {
       const originalLabel = buttonElement.textContent;

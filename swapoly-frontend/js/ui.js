@@ -150,6 +150,7 @@ export function attachEventHandlers(containerElement, addItemButton, handlers) {
     const actionButton = event.target.closest('button[data-action]');
 
     if (actionButton) {
+      event.preventDefault();
       event.stopPropagation();
       const card = actionButton.closest('.listing-card');
 
