@@ -1,4 +1,4 @@
-import { createMessage, getMessages } from './api.js';
+import { createMessage, getListings, getMessages } from './api.js';
 import { renderError, renderLoading } from './ui.js';
 import { getCurrentUser } from './user.js';
 
@@ -7,6 +7,7 @@ let refreshHandle = null;
 function getUi() {
   return {
     statusElement: document.getElementById('chat-status'),
+    roleElement: document.getElementById('chat-role'),
     messagesList: document.getElementById('messages-list'),
     form: document.getElementById('chat-form'),
     input: document.getElementById('message-input'),
@@ -14,6 +15,14 @@ function getUi() {
     container: document.getElementById('chat-container'),
     whatsappButton: document.getElementById('whatsapp-btn'),
   };
+}
+
+function setRoleLabel(roleElement, role) {
+  if (!roleElement) {
+    return;
+  }
+
+  roleElement.textContent = `You are chatting as ${role === 'seller' ? 'Seller' : 'Buyer'}`;
 }
 
 function openWhatsApp(listing) {
@@ -53,12 +62,14 @@ function renderMessages(messagesList, messages, currentUser) {
   messages.forEach((item) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'chat-message';
-    if (item.sender === currentUser.name) {
+    if (String(item.sender_id) === String(currentUser.id)) {
       wrapper.classList.add('is-own');
     }
 
     const sender = document.createElement('strong');
-    sender.textContent = item.sender;
+    sender.textContent = item.sender_role
+      ? `${item.sender} (${item.sender_role})`
+      : item.sender;
 
     const body = document.createElement('p');
     body.textContent = item.message;
@@ -86,7 +97,7 @@ async function loadMessages(listingId, ui, currentUser) {
   }
 }
 
-async function handleSubmit(event, listingId, ui, currentUser) {
+async function handleSubmit(event, listingId, ui, currentUser, currentRole) {
   event.preventDefault();
 
   const message = ui.input.value.trim();
@@ -101,7 +112,9 @@ async function handleSubmit(event, listingId, ui, currentUser) {
   try {
     await createMessage({
       listing_id: listingId,
+      sender_id: currentUser.id,
       sender: currentUser.name,
+      sender_role: currentRole,
       message,
     });
 
@@ -133,7 +146,14 @@ async function initChatPage() {
   const currentUser = getCurrentUser();
   const ui = getUi();
 
-  if (!ui.statusElement || !ui.messagesList || !ui.form || !ui.input || !ui.sendButton || !ui.container) {
+  if (
+    !ui.statusElement ||
+    !ui.messagesList ||
+    !ui.form ||
+    !ui.input ||
+    !ui.sendButton ||
+    !ui.container
+  ) {
     console.error('Required chat elements are missing.');
     return;
   }
@@ -148,11 +168,25 @@ async function initChatPage() {
     return;
   }
 
+  let currentRole = 'buyer';
+
+  try {
+    const listings = await getListings();
+    const listing = listings.find((item) => String(item.id) === String(listingId));
+
+    if (listing) {
+      currentRole = String(currentUser.id) === String(listing.seller_id) ? 'seller' : 'buyer';
+    }
+  } catch (error) {
+    console.error('Failed to determine chat role:', error);
+  }
+
+  setRoleLabel(ui.roleElement, currentRole);
   renderLoading(ui.statusElement, ui.messagesList);
   await loadMessages(listingId, ui, currentUser);
 
   ui.form.addEventListener('submit', (event) => {
-    handleSubmit(event, listingId, ui, currentUser);
+    handleSubmit(event, listingId, ui, currentUser, currentRole);
   });
 
   if (ui.whatsappButton) {

@@ -65,7 +65,7 @@ app.patch('/api/listings/:id/sold', (req, res) => {
 });
 
 app.post('/api/messages', (req, res) => {
-  const { listing_id, sender, message } = req.body ?? {};
+  const { listing_id, sender_id, sender, sender_role, message } = req.body ?? {};
 
   if (!listing_id || !sender || !message) {
     return res.status(400).json({ message: 'listing_id, sender, and message are required' });
@@ -74,7 +74,9 @@ app.post('/api/messages', (req, res) => {
   const newMessage = {
     id: Date.now(),
     listing_id,
+    sender_id: sender_id ?? null,
     sender,
+    sender_role: sender_role ?? 'buyer',
     message,
     created_at: new Date(),
   };
