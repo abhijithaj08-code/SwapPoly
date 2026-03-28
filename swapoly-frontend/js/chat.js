@@ -1,6 +1,6 @@
 import { createMessage, getListings, getMessages } from './api.js';
 import { renderError, renderLoading } from './ui.js';
-import { getCurrentUser } from './user.js';
+import { getCurrentUser, requireCurrentUser } from './user.js';
 
 let refreshHandle = null;
 
@@ -143,7 +143,12 @@ function stopAutoRefresh() {
 }
 
 async function initChatPage() {
-  const currentUser = getCurrentUser();
+  const currentUser = requireCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
+
   const ui = getUi();
 
   if (

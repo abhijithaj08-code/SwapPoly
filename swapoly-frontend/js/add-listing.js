@@ -1,5 +1,5 @@
 import { createListing } from './api.js';
-import { getCurrentUser } from './user.js';
+import { requireCurrentUser } from './user.js';
 
 const CATEGORY_OPTIONS = new Set([
   'Drawing Gear',
@@ -48,7 +48,11 @@ function validateForm({ title, price, image_url, category_name, whatsapp_number 
 
 async function handleSubmit(event, ui) {
   event.preventDefault();
-  const currentUser = getCurrentUser();
+  const currentUser = requireCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
 
   const payload = {
     title: ui.titleInput.value.trim(),
@@ -90,7 +94,12 @@ async function handleSubmit(event, ui) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  getCurrentUser();
+  const currentUser = requireCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
+
   const ui = getUi();
 
   if (!ui.form || !ui.status || !ui.submitButton) {

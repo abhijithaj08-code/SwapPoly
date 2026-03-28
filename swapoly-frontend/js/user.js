@@ -1,21 +1,43 @@
 const USER_STORAGE_KEY = 'user';
-
-export function ensureCurrentUser() {
-  const existingUser = localStorage.getItem(USER_STORAGE_KEY);
-
-  if (existingUser) {
-    return JSON.parse(existingUser);
-  }
-
-  const newUser = {
-    id: Date.now(),
-    name: `User${Math.floor(Math.random() * 1000)}`,
-  };
-
-  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
-  return newUser;
-}
+const LOGIN_PAGE = './login.html';
 
 export function getCurrentUser() {
-  return ensureCurrentUser();
+  const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+
+  if (!storedUser) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(storedUser);
+  } catch (error) {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    return null;
+  }
+}
+
+export function setCurrentUser(name) {
+  const user = {
+    id: Date.now(),
+    name,
+  };
+
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  return user;
+}
+
+export function requireCurrentUser() {
+  const user = getCurrentUser();
+
+  if (!user) {
+    window.location.href = LOGIN_PAGE;
+    return null;
+  }
+
+  return user;
+}
+
+export function logoutCurrentUser() {
+  localStorage.removeItem(USER_STORAGE_KEY);
+  window.location.href = LOGIN_PAGE;
 }

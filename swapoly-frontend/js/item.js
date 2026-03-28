@@ -1,6 +1,6 @@
 import { getListings, markAsSold } from './api.js';
 import { formatPrice, renderError, renderLoading } from './ui.js';
-import { getCurrentUser } from './user.js';
+import { getCurrentUser, requireCurrentUser } from './user.js';
 
 function getUi() {
   return {
@@ -182,7 +182,12 @@ function attachItemHandlers(containerElement, statusElement, listingRef) {
 }
 
 async function initItemPage() {
-  getCurrentUser();
+  const currentUser = requireCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
+
   const ui = getUi();
   const listingRef = { current: null };
 

@@ -6,7 +6,7 @@ import {
   renderLoading,
   updateListingStatus,
 } from './ui.js';
-import { ensureCurrentUser } from './user.js';
+import { logoutCurrentUser, requireCurrentUser } from './user.js';
 
 console.log('JS Loaded');
 
@@ -15,7 +15,19 @@ function getUi() {
     statusMessage: document.getElementById('status-message'),
     listingsContainer: document.getElementById('listings-container'),
     addItemButton: document.getElementById('add-item-btn'),
+    welcomeUser: document.getElementById('welcome-user'),
+    logoutButton: document.getElementById('logout-btn'),
   };
+}
+
+function setupHeader(ui, currentUser) {
+  if (ui.welcomeUser) {
+    ui.welcomeUser.textContent = `Welcome, ${currentUser.name}`;
+  }
+
+  ui.logoutButton?.addEventListener('click', () => {
+    logoutCurrentUser();
+  });
 }
 
 function attachUiHandlers(ui) {
@@ -56,7 +68,12 @@ function attachUiHandlers(ui) {
 }
 
 async function initApp() {
-  ensureCurrentUser();
+  const currentUser = requireCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
+
   const ui = getUi();
 
   if (!ui.statusMessage || !ui.listingsContainer) {
@@ -64,6 +81,7 @@ async function initApp() {
     return;
   }
 
+  setupHeader(ui, currentUser);
   renderLoading(ui.statusMessage, ui.listingsContainer);
   attachUiHandlers(ui);
 
