@@ -14,27 +14,61 @@
     <main class="page">
       <section class="listings-section" aria-label="Add listing form">
         <div class="listing-card">
-          <div class="listing-content">
+          <form id="add-listing-form" class="listing-content" novalidate>
             <h2 class="listing-title">Create a new listing</h2>
+            <div id="form-status" class="status-message" role="status" aria-live="polite"></div>
             <label>
               Title
-              <input class="search-input" type="text" placeholder="Listing title" />
+              <input
+                id="title"
+                name="title"
+                class="search-input"
+                type="text"
+                placeholder="Listing title"
+                required
+              />
             </label>
             <label>
               Price
-              <input class="search-input" type="number" placeholder="Price" />
+              <input
+                id="price"
+                name="price"
+                class="search-input"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="Price"
+                required
+              />
             </label>
             <label>
               Image
-              <input class="search-input" type="url" placeholder="Image URL" />
+              <input
+                id="image_url"
+                name="image_url"
+                class="search-input"
+                type="url"
+                placeholder="Image URL"
+                required
+              />
             </label>
             <label>
               Category
-              <input class="search-input" type="text" placeholder="Category" />
+              <input
+                id="category"
+                name="category"
+                class="search-input"
+                type="text"
+                placeholder="Category"
+                required
+              />
             </label>
-          </div>
+            <button id="submit-btn" class="chat-btn" type="submit">Create Listing</button>
+          </form>
         </div>
       </section>
     </main>
+
+    <script type="module" src="./js/add-listing.js"></script>
   </body>
 </html>

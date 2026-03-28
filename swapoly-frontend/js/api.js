@@ -31,3 +31,20 @@ export async function markAsSold(id) {
   const data = await response.json().catch(() => null);
   return data;
 }
+
+export async function createListing(data) {
+  const response = await fetch(LISTINGS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create listing');
+  }
+
+  return response.json();
+}
