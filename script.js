@@ -1,32 +1,77 @@
 const API_URL = 'http://localhost:5000/api/listings';
 
-const ui = {
-  statusMessage: document.getElementById('status-message'),
-  listingsGrid: document.getElementById('listings-grid'),
-};
-
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('JS Loaded');
   initializePage();
 });
 
+function getUi() {
+  return {
+    statusMessage: document.getElementById('status-message'),
+    listingsGrid: document.getElementById('listings-grid'),
+    addItemButton: document.getElementById('add-item-btn'),
+  };
+}
+
 async function initializePage() {
-  setStatus('Loading...');
-  clearListings();
+  const ui = getUi();
+
+  if (!ui.statusMessage || !ui.listingsGrid) {
+    console.error('Required UI elements are missing.');
+    return;
+  }
+
+  attachEventListeners(ui);
+  setStatus(ui, 'Loading...');
+  clearListings(ui);
 
   try {
     const listings = await fetchListings();
 
     if (!Array.isArray(listings) || listings.length === 0) {
-      setStatus('No listings available');
+      setStatus(ui, 'No listings available');
       return;
     }
 
-    renderListings(listings);
-    setStatus('');
+    renderListings(ui, listings);
+    setStatus(ui, '');
   } catch (error) {
     console.error('Failed to fetch listings:', error);
-    setStatus('Unable to load listings. Please try again later.', true);
+    setStatus(ui, 'Unable to load listings. Please try again later.', true);
   }
+}
+
+function attachEventListeners(ui) {
+  ui.listingsGrid.addEventListener('click', (event) => {
+    const card = event.target.closest('.listing-card');
+
+    if (!card || !ui.listingsGrid.contains(card)) {
+      return;
+    }
+
+    console.log('Clicked listing:', card.dataset.id);
+  });
+
+  ui.listingsGrid.addEventListener('keydown', (event) => {
+    const card = event.target.closest('.listing-card');
+
+    if (!card || !ui.listingsGrid.contains(card)) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      console.log('Clicked listing:', card.dataset.id);
+    }
+  });
+
+  if (ui.addItemButton) {
+    ui.addItemButton.addEventListener('click', () => {
+      console.log('Add item clicked');
+    });
+  }
+
+  console.log('Event listeners attached');
 }
 
 async function fetchListings() {
@@ -44,8 +89,8 @@ async function fetchListings() {
   return response.json();
 }
 
-function renderListings(listings) {
-  clearListings();
+function renderListings(ui, listings) {
+  clearListings(ui);
 
   const fragment = document.createDocumentFragment();
 
@@ -55,25 +100,16 @@ function renderListings(listings) {
   });
 
   ui.listingsGrid.appendChild(fragment);
+  console.log('Listings rendered');
 }
 
 function createListingCard(listing) {
   const card = document.createElement('article');
   card.className = 'listing-card';
+  card.dataset.id = listing.id ?? '';
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Open listing ${listing.title ?? 'details'}`);
-
-  card.addEventListener('click', () => {
-    console.log('Listing clicked:', listing.id);
-  });
-
-  card.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      console.log('Listing clicked:', listing.id);
-    }
-  });
 
   const imageWrap = document.createElement('div');
   imageWrap.className = 'image-wrap';
@@ -126,11 +162,11 @@ function formatPrice(price) {
   }).format(Number(price));
 }
 
-function setStatus(message, isError = false) {
+function setStatus(ui, message, isError = false) {
   ui.statusMessage.textContent = message;
   ui.statusMessage.classList.toggle('is-error', isError);
 }
 
-function clearListings() {
+function clearListings(ui) {
   ui.listingsGrid.textContent = '';
 }
