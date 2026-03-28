@@ -18,6 +18,7 @@ function getUi() {
 
 function openWhatsApp(listing) {
   if (!listing?.whatsapp_number) {
+    alert('Seller WhatsApp number not available');
     return;
   }
 
@@ -155,16 +156,12 @@ async function initChatPage() {
   });
 
   if (ui.whatsappButton) {
-    if (whatsappNumber) {
-      ui.whatsappButton.addEventListener('click', () => {
-        openWhatsApp({
-          title: listingTitle,
-          whatsapp_number: whatsappNumber,
-        });
+    ui.whatsappButton.addEventListener('click', () => {
+      openWhatsApp({
+        title: listingTitle,
+        whatsapp_number: whatsappNumber,
       });
-    } else {
-      ui.whatsappButton.disabled = true;
-    }
+    });
   }
 
   startAutoRefresh(listingId, ui, currentUser);

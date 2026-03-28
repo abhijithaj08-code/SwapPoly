@@ -25,6 +25,8 @@ function createListingCard(listing) {
   const card = document.createElement('article');
   card.className = 'listing-card';
   card.dataset.id = listing.id ?? '';
+  card.dataset.title = listing.title ?? '';
+  card.dataset.whatsapp = listing.whatsapp_number ?? '';
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
 
@@ -168,7 +170,11 @@ export function attachEventHandlers(containerElement, addItemButton, handlers) {
       }
 
       if (actionButton.dataset.action === 'chat') {
-        handlers.onChat(card.dataset.id);
+        handlers.onChat({
+          id: card.dataset.id,
+          title: card.dataset.title,
+          whatsapp: card.dataset.whatsapp,
+        });
       }
 
       if (actionButton.dataset.action === 'sold' && !actionButton.disabled) {

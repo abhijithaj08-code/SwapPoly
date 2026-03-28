@@ -24,9 +24,14 @@ function attachUiHandlers(ui) {
       console.log('Clicked listing:', listingId);
       window.location.href = `./item.html?id=${listingId}`;
     },
-    onChat(listingId) {
-      console.log('Start chat for listing:', listingId);
-      window.location.href = `./chat.html?listing_id=${listingId}`;
+    onChat(listing) {
+      console.log('Start chat for listing:', listing.id);
+      const params = new URLSearchParams({
+        listing_id: String(listing.id),
+        title: listing.title || '',
+        whatsapp: listing.whatsapp || '',
+      });
+      window.location.href = `./chat.html?${params.toString()}`;
     },
     async onMarkSold(listingId, buttonElement) {
       const originalLabel = buttonElement.textContent;
