@@ -13,6 +13,8 @@ function formatPrice(price) {
 function createListingCard(listing) {
   const card = document.createElement('article');
   card.className = 'listing-card';
+  card.dataset.id = listing.id ?? '';
+  card.tabIndex = 0;
 
   const imageWrap = document.createElement('div');
   imageWrap.className = 'image-wrap';
@@ -82,4 +84,5 @@ export function renderListings(statusElement, containerElement, listings) {
   });
 
   containerElement.appendChild(fragment);
+  console.log('Listings rendered');
 }
