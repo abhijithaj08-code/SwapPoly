@@ -15,6 +15,7 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 
 let listings = [];
+let messages = [];
 
 app.get('/api/listings', (req, res) => {
   console.log('Returning listings:', listings.length);
@@ -59,6 +60,33 @@ app.patch('/api/listings/:id/sold', (req, res) => {
 
   listing.status = 'Sold';
   res.json(listing);
+});
+
+app.post('/api/messages', (req, res) => {
+  const { listing_id, sender, message } = req.body ?? {};
+
+  if (!listing_id || !sender || !message) {
+    return res.status(400).json({ message: 'listing_id, sender, and message are required' });
+  }
+
+  const newMessage = {
+    id: Date.now(),
+    listing_id,
+    sender,
+    message,
+    created_at: new Date(),
+  };
+
+  messages.push(newMessage);
+  res.status(201).json(newMessage);
+});
+
+app.get('/api/messages/:listing_id', (req, res) => {
+  const listingMessages = messages.filter(
+    (msg) => String(msg.listing_id) === String(req.params.listing_id),
+  );
+
+  res.json(listingMessages);
 });
 
 app.listen(PORT, () => {

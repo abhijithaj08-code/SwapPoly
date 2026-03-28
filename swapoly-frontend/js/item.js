@@ -124,6 +124,7 @@ function attachItemHandlers(containerElement, statusElement) {
 
     if (button.dataset.action === 'chat') {
       console.log('Start chat for listing:', listingId);
+      window.location.href = `./chat.html?listing_id=${listingId}`;
       return;
     }
 

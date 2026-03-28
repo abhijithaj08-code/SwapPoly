@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwapPoly | Offer Chat</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1 class="app-title">Offer Chat</h1>
+    </header>
+
+    <main class="page">
+      <section class="listings-section" aria-label="Offer chat">
+        <div id="chat-status" class="status-message" role="status" aria-live="polite"></div>
+        <div id="chat-container" class="listing-card">
+          <div class="listing-content">
+            <div id="messages-list" class="chat-messages"></div>
+            <form id="chat-form" class="listing-actions">
+              <input
+                id="message-input"
+                class="search-input"
+                type="text"
+                placeholder="Type your offer or message"
+                autocomplete="off"
+                required
+              />
+              <button id="send-btn" class="chat-btn" type="submit">Send</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./js/chat.js"></script>
+  </body>
+</html>

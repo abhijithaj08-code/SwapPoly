@@ -1,4 +1,5 @@
 const LISTINGS_ENDPOINT = 'http://localhost:5000/api/listings';
+const MESSAGES_ENDPOINT = 'http://localhost:5000/api/messages';
 
 export async function getListings() {
   const response = await fetch(LISTINGS_ENDPOINT, {
@@ -53,6 +54,40 @@ export async function createListing(data) {
       body: errorText,
     });
     throw new Error(errorText || 'Failed to create listing');
+  }
+
+  return response.json();
+}
+
+export async function getMessages(listingId) {
+  const response = await fetch(`${MESSAGES_ENDPOINT}/${listingId}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createMessage(data) {
+  const response = await fetch(MESSAGES_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(errorText || 'Failed to send message');
   }
 
   return response.json();

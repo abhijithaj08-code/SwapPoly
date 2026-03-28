@@ -178,6 +178,28 @@ body {
   color: var(--danger);
 }
 
+.chat-messages {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 180px;
+}
+
+.chat-message {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  background: #fafbfd;
+}
+
+.chat-message p {
+  margin: 0.35rem 0;
+}
+
+.chat-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .fab {
   position: fixed;
   right: 1rem;
