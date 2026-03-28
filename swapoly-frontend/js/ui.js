@@ -10,11 +10,16 @@ function formatPrice(price) {
   }).format(Number(price));
 }
 
+function isSold(listing) {
+  return String(listing.status).toLowerCase() === 'sold';
+}
+
 function createListingCard(listing) {
   const card = document.createElement('article');
   card.className = 'listing-card';
   card.dataset.id = listing.id ?? '';
   card.tabIndex = 0;
+  card.setAttribute('role', 'button');
 
   const imageWrap = document.createElement('div');
   imageWrap.className = 'image-wrap';
@@ -27,7 +32,7 @@ function createListingCard(listing) {
 
   imageWrap.appendChild(image);
 
-  if (String(listing.status).toLowerCase() === 'sold') {
+  if (isSold(listing)) {
     const soldOverlay = document.createElement('div');
     soldOverlay.className = 'sold-overlay';
     soldOverlay.textContent = 'SOLD';
@@ -49,7 +54,28 @@ function createListingCard(listing) {
   category.className = 'category-tag';
   category.textContent = listing.category_name || 'Uncategorized';
 
-  content.append(title, price, category);
+  const actions = document.createElement('div');
+  actions.className = 'listing-actions';
+
+  const chatButton = document.createElement('button');
+  chatButton.type = 'button';
+  chatButton.className = 'chat-btn';
+  chatButton.dataset.action = 'chat';
+  chatButton.textContent = 'Chat / Make Offer';
+
+  const soldButton = document.createElement('button');
+  soldButton.type = 'button';
+  soldButton.className = 'sold-btn';
+  soldButton.dataset.action = 'sold';
+  soldButton.textContent = isSold(listing) ? 'Sold' : 'Mark as Sold';
+
+  if (isSold(listing)) {
+    chatButton.disabled = true;
+    soldButton.disabled = true;
+  }
+
+  actions.append(chatButton, soldButton);
+  content.append(title, price, category, actions);
   card.append(imageWrap, content);
 
   return card;
@@ -64,6 +90,34 @@ export function renderLoading(statusElement, containerElement) {
 export function renderError(statusElement, message) {
   statusElement.textContent = message;
   statusElement.classList.add('is-error');
+}
+
+export function updateListingStatus(containerElement, listingId) {
+  const card = containerElement.querySelector(`.listing-card[data-id="${listingId}"]`);
+
+  if (!card) {
+    return;
+  }
+
+  if (!card.querySelector('.sold-overlay')) {
+    const imageWrap = card.querySelector('.image-wrap');
+    const soldOverlay = document.createElement('div');
+    soldOverlay.className = 'sold-overlay';
+    soldOverlay.textContent = 'SOLD';
+    imageWrap?.appendChild(soldOverlay);
+  }
+
+  const chatButton = card.querySelector('.chat-btn');
+  const soldButton = card.querySelector('.sold-btn');
+
+  if (chatButton) {
+    chatButton.disabled = true;
+  }
+
+  if (soldButton) {
+    soldButton.disabled = true;
+    soldButton.textContent = 'Sold';
+  }
 }
 
 export function renderListings(statusElement, containerElement, listings) {
@@ -85,4 +139,51 @@ export function renderListings(statusElement, containerElement, listings) {
 
   containerElement.appendChild(fragment);
   console.log('Listings rendered');
+}
+
+export function attachEventHandlers(containerElement, addItemButton, handlers) {
+  containerElement.addEventListener('click', (event) => {
+    const actionButton = event.target.closest('button[data-action]');
+
+    if (actionButton) {
+      event.stopPropagation();
+      const card = actionButton.closest('.listing-card');
+
+      if (!card) {
+        return;
+      }
+
+      if (actionButton.dataset.action === 'chat') {
+        handlers.onChat(card.dataset.id);
+      }
+
+      if (actionButton.dataset.action === 'sold' && !actionButton.disabled) {
+        handlers.onMarkSold(card.dataset.id, actionButton);
+      }
+
+      return;
+    }
+
+    const card = event.target.closest('.listing-card');
+
+    if (card && containerElement.contains(card)) {
+      handlers.onCardClick(card.dataset.id);
+    }
+  });
+
+  containerElement.addEventListener('keydown', (event) => {
+    const card = event.target.closest('.listing-card');
+
+    if (!card || !containerElement.contains(card)) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handlers.onCardClick(card.dataset.id);
+    }
+  });
+
+  addItemButton?.addEventListener('click', handlers.onAddItem);
+  console.log('Event listeners attached');
 }

@@ -1,56 +1,69 @@
-import { getListings } from './api.js';
-import { renderError, renderListings, renderLoading } from './ui.js';
+import { getListings, markAsSold } from './api.js';
+import {
+  attachEventHandlers,
+  renderError,
+  renderListings,
+  renderLoading,
+  updateListingStatus,
+} from './ui.js';
 
 console.log('JS Loaded');
 
-function attachEventListeners() {
-  const listingsContainer = document.getElementById('listings-container');
-  const addItemButton = document.getElementById('add-item-btn');
+function getUi() {
+  return {
+    statusMessage: document.getElementById('status-message'),
+    listingsContainer: document.getElementById('listings-container'),
+    addItemButton: document.getElementById('add-item-btn'),
+  };
+}
 
-  if (listingsContainer) {
-    listingsContainer.addEventListener('click', (event) => {
-      const card = event.target.closest('.listing-card');
+function attachUiHandlers(ui) {
+  attachEventHandlers(ui.listingsContainer, ui.addItemButton, {
+    onCardClick(listingId) {
+      console.log('Clicked listing:', listingId);
+      console.log('Future navigation target prepared for listing:', listingId);
+    },
+    onChat(listingId) {
+      console.log('Start chat for listing:', listingId);
+    },
+    async onMarkSold(listingId, buttonElement) {
+      const originalLabel = buttonElement.textContent;
 
-      if (!card || !listingsContainer.contains(card)) {
-        return;
+      try {
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'Updating...';
+        await markAsSold(listingId);
+        updateListingStatus(ui.listingsContainer, listingId);
+      } catch (error) {
+        buttonElement.disabled = false;
+        buttonElement.textContent = originalLabel;
+        renderError(ui.statusMessage, 'Unable to update listing status. Please try again later.');
+        console.error('Failed to mark listing as sold:', error);
       }
-
-      console.log('Clicked listing:', card.dataset.id);
-    });
-  }
-
-  if (addItemButton) {
-    addItemButton.addEventListener('click', () => {
-      console.log('Add item clicked');
-    });
-  }
-
-  console.log('Event listeners attached');
+    },
+    onAddItem() {
+      console.log('Navigate to Add Listing Page');
+      window.location.href = './add-listing.html';
+    },
+  });
 }
 
 async function initApp() {
-  const statusMessage = document.getElementById('status-message');
-  const listingsContainer = document.getElementById('listings-container');
+  const ui = getUi();
 
-  if (!statusMessage || !listingsContainer) {
+  if (!ui.statusMessage || !ui.listingsContainer) {
     console.error('Required UI elements are missing.');
     return;
   }
 
-  renderLoading(statusMessage, listingsContainer);
-  attachEventListeners();
+  renderLoading(ui.statusMessage, ui.listingsContainer);
+  attachUiHandlers(ui);
 
   try {
-    const { listings, usingMockData, error } = await getListings();
-
-    renderListings(statusMessage, listingsContainer, listings);
-
-    if (usingMockData && error) {
-      renderError(statusMessage, 'Could not reach backend. Showing sample data.');
-      console.error('Failed to fetch listings:', error);
-    }
+    const listings = await getListings();
+    renderListings(ui.statusMessage, ui.listingsContainer, listings);
   } catch (error) {
-    renderError(statusMessage, 'Something went wrong while loading listings.');
+    renderError(ui.statusMessage, 'Unable to load listings. Please try again later.');
     console.error('App initialization failed:', error);
   }
 }
