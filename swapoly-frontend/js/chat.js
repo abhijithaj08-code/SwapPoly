@@ -119,29 +119,25 @@ function renderBuyerSelection(container, buyers, selectedBuyerId, onSelect) {
 
   container.textContent = '';
 
-  const title = document.createElement('p');
-  title.className = 'status-message';
-  title.textContent = 'Select a buyer to start chat';
-  container.appendChild(title);
-
   if (buyers.length === 0) {
     const empty = document.createElement('p');
-    empty.className = 'status-message';
+    empty.className = 'status-message buyer-empty';
     empty.textContent = 'No buyers have messaged this listing yet.';
     container.appendChild(empty);
     return;
   }
 
   buyers.forEach((buyer) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'chat-btn';
-    button.textContent = `Chat with ${buyer.name}`;
-    button.disabled = String(selectedBuyerId) === String(buyer.id);
-    button.addEventListener('click', () => {
+    const item = document.createElement('div');
+    item.className = 'buyer-item';
+    if (String(selectedBuyerId) === String(buyer.id)) {
+      item.classList.add('active');
+    }
+    item.textContent = buyer.name;
+    item.addEventListener('click', () => {
       onSelect(buyer.id);
     });
-    container.appendChild(button);
+    container.appendChild(item);
   });
 }
 
@@ -300,6 +296,13 @@ async function initChatPage() {
         true,
       );
       ui.messagesList.textContent = '';
+      const emptyState = document.createElement('p');
+      emptyState.className = 'status-message';
+      emptyState.textContent =
+        currentRole === 'seller'
+          ? 'Select a buyer to start chatting'
+          : 'No conversation available.';
+      ui.messagesList.appendChild(emptyState);
       ui.sendButton.disabled = true;
       ui.input.disabled = true;
       return false;

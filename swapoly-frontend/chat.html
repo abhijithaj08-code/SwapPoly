@@ -15,22 +15,28 @@
       <section class="listings-section" aria-label="Offer chat">
         <div id="chat-status" class="status-message" role="status" aria-live="polite"></div>
         <div id="chat-role" class="status-message" aria-live="polite"></div>
-        <div id="buyer-selection" class="listing-actions"></div>
-        <div id="chat-container" class="listing-card">
-          <div class="listing-content">
-            <div id="messages-list" class="chat-messages"></div>
-            <form id="chat-form" class="listing-actions">
-              <input
-                id="message-input"
-                class="search-input"
-                type="text"
-                placeholder="Type your offer or message"
-                autocomplete="off"
-                required
-              />
-              <button id="send-btn" class="chat-btn" type="submit">Send</button>
-              <button id="whatsapp-btn" class="chat-btn" type="button">Finalize on WhatsApp</button>
-            </form>
+        <div id="chat-container" class="chat-container">
+          <aside class="sidebar" aria-label="Buyer conversations">
+            <div id="buyer-selection" class="buyer-list"></div>
+          </aside>
+          <div class="chat-main">
+            <div class="listing-card chat-card">
+              <div class="listing-content">
+                <div id="messages-list" class="chat-messages"></div>
+                <form id="chat-form" class="listing-actions">
+                  <input
+                    id="message-input"
+                    class="search-input"
+                    type="text"
+                    placeholder="Type your offer or message"
+                    autocomplete="off"
+                    required
+                  />
+                  <button id="send-btn" class="chat-btn" type="submit">Send</button>
+                  <button id="whatsapp-btn" class="chat-btn" type="button">Finalize on WhatsApp</button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -217,6 +217,53 @@ body {
   min-height: 180px;
 }
 
+.chat-container {
+  display: flex;
+  height: 80vh;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  background: #fbfcfe;
+}
+
+.buyer-list {
+  display: grid;
+}
+
+.buyer-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.buyer-item.active {
+  background: #e0e7ff;
+}
+
+.buyer-empty {
+  padding: 12px;
+  margin: 0;
+}
+
+.chat-main {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.chat-card {
+  height: 100%;
+  cursor: default;
+}
+
 .chat-message {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -276,5 +323,16 @@ body {
   .topbar-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .chat-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
   }
 }
